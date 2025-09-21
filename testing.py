@@ -106,6 +106,14 @@ def main():
     print("[Python] Saving to csv...")
     with open(filename, "w", newline="") as f:
         writer = csv.writer(f)
+        
+        # Write header with parameter info
+        writer.writerow(["Parameters: KpL,KiL,KdL,KpR,KiR,KdR,TS"])
+        writer.writerow(args)
+        writer.writerow([])  # Empty row separator
+        writer.writerow(["Data:"])
+        
+        # Write the received data
         for row in data:
             writer.writerow([row])
 
