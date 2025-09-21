@@ -27,13 +27,14 @@ def thread():
     print("[Python] Thread started!")
     
     try:
-        arduino_serial = serial.Serial('/dev/ttyACM0', 115200, timeout=0)
+        arduino_serial = serial.Serial('/dev/ttyACM0', 115200, timeout=0.1)  # Increased timeout
         time.sleep(2) # Wait for the Arduino to reset after connection
         print("[Python] Connected to /dev/ttyACM0")
     except Exception as e:
         print(f"[Python] Connection error: {e}")
         arduino_serial = None
     
+    buffer = ""  # Buffer to accumulate partial data
     start_time = time.time()
     print(f"[Python] Thread started at: {start_time}")
     while runThread:
@@ -41,11 +42,18 @@ def thread():
             if arduino_serial:
                 try:
                     if arduino_serial.in_waiting > 0:
-                        incoming_data = arduino_serial.readline().decode('utf-8').strip()
-                        if incoming_data:
-                            print(f"[Arduino] Received: {incoming_data}")
-                            with arduino_lock:
-                                data.append(incoming_data)
+                        # Read all available data
+                        raw_data = arduino_serial.read(arduino_serial.in_waiting).decode('utf-8')
+                        buffer += raw_data
+                        
+                        # Process complete lines
+                        while '\n' in buffer:
+                            line, buffer = buffer.split('\n', 1)
+                            line = line.strip()
+                            if line:
+                                print(f"[Arduino] Received: {line}")
+                                with arduino_lock:
+                                    data.append(line)
                 except Exception as e:
                     print(f"[Python] Read error: {e}")
 
