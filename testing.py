@@ -57,7 +57,7 @@ def thread():
                 except Exception as e:
                     print(f"[Python] Read error: {e}")
 
-            time.sleep(0.0001)
+            time.sleep(0.0002)
             
         except Exception as e:
             print(f"[Python] Failed: {e}")
