@@ -1,9 +1,9 @@
 import serial
 import threading
 import time
-import bisect
 import csv
 import os
+import sys
 
 arduino_lock = threading.Lock()
 data = []
@@ -23,7 +23,14 @@ def get_next_filename(base_name="output", extension=".csv"):
             return filename
         counter += 1
 
-def thread():
+def get_args():
+    args = sys.argv[1:]  # Remove parentheses
+    if len(args) != 7:
+        print("[Python] Please provide 7 float args [KpL,KiL,KdL,KpR,KiR,KdR,TS]")
+        sys.exit()
+    return args
+
+def thread(args):
     print("[Python] Thread started!")
     
     try:
@@ -33,6 +40,17 @@ def thread():
     except Exception as e:
         print(f"[Python] Connection error: {e}")
         arduino_serial = None
+    
+    # Send args once at the start
+    if arduino_serial and args:
+        try:
+            args_str = ','.join(args)
+            msg = f"{args_str}\n"
+            arduino_serial.write(msg.encode('utf-8'))
+            arduino_serial.flush()
+            print(f"[Python] Sent args: {msg.strip()}")
+        except Exception as e:
+            print(f"[Python] Write error: {e}")
     
     buffer = ""  # Buffer to accumulate partial data
     start_time = time.time()
@@ -65,8 +83,12 @@ def thread():
 
 def main():
     global runThread
+    
+    # Get command line arguments
+    args = get_args()
+    print(f"[Python] Command line args: {args}")
 
-    arduino_comm_thread = threading.Thread(target=thread, daemon=True)
+    arduino_comm_thread = threading.Thread(target=thread, args=(args,), daemon=True)
     arduino_comm_thread.start()
 
     start_time = time.time()
