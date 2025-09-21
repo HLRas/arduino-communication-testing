@@ -101,6 +101,15 @@ def main():
     runThread = False # Stop the thread
     time.sleep(0.1)
 
+    save = ''
+    while (save not in ('n', 'y')):
+        save = input("Should I save the result? (y/n): ") 
+        if save not in ('n', 'y'):
+            print("[Python] Please choose (y/n)")  
+    if save == 'n':
+        print("[Python] Not saving csv...")
+        sys.exit()
+
     # Save file
     filename = get_next_filename("output", ".csv")
     print("[Python] Saving to csv...")
